@@ -1,0 +1,62 @@
+/*Query 1 - query used for first insight*/
+
+SELECT
+  g.name GenreName,
+  (il.unitprice * SUM(il.quantity)) AS TotalSpent
+FROM invoiceline il
+JOIN track t
+  ON t.trackid = il.trackid
+JOIN genre g
+  ON g.genreid = t.genreid
+GROUP BY 1
+ORDER BY 2;
+
+/*Query 2 - query used for second insight*/
+SELECT
+  ar.name AS Artist,
+  (il.unitprice * SUM(il.quantity)) AS Earned
+FROM customer AS c
+JOIN invoice AS i
+  ON c.customerid = i.CustomerId
+JOIN invoiceLine AS il
+  ON i.invoiceid = il.invoiceid
+JOIN track AS t
+  ON il.trackid = t.trackid
+JOIN album AS al
+  ON t.albumid = al.albumid
+JOIN artist AS ar
+  ON al.artistid = ar.artistid
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 10;
+
+/*Query 3 - query used for third insight*/
+SELECT
+  c.country AS Country,
+  SUM(i.total) AS TotalSpent
+FROM invoice AS i
+JOIN customer AS c
+  ON c.customerid = i.CustomerId
+GROUP BY Country
+ORDER BY TotalSpent DESC
+
+/*Query 4 - query used for fourth insight*/
+SELECT
+  STRFTIME('%Y', i.invoicedate) AS month,
+  SUM(i.total) AS total
+FROM invoice AS i
+JOIN customer AS c
+  ON c.customerid = i.CustomerId
+Where c.country in
+((select Country
+  from(SELECT
+  c.country AS Country,
+  SUM(i.total) AS TotalSpent
+FROM invoice AS i
+JOIN customer AS c
+  ON c.customerid = i.CustomerId
+GROUP BY Country
+ORDER BY TotalSpent DESC
+      limit 5)))
+Group by month 
+order by month Desc;
